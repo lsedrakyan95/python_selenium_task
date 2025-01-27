@@ -1,21 +1,22 @@
+import allure
+import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 from pages.homepage import HomePage
-import pytest
-import allure
 
-@pytest.fixture(scope="module")
-def driver():
+@pytest.fixture(name="driver")
+def driver_fixture():
     options = Options()
     options.add_argument("--start-maximized")
-    service = Service("./drivers/chromedriver")
-    driver = webdriver.Chrome(service=service, options=options)
-    yield driver
-    driver.quit()
+    service = Service(ChromeDriverManager().install())
+    chrome_driver = webdriver.Chrome(service=service, options=options)
+    yield chrome_driver
+    chrome_driver.quit()
 
-@pytest.fixture(scope="module")
-def homepage(driver):
+@pytest.fixture(name="homepage")
+def homepage_fixture(driver):
     page = HomePage(driver)
     page.load_homepage()
     return page
@@ -26,7 +27,7 @@ def test_case_1(homepage):
     leadership_page.open_person_details('Leonard Livschitz')
     actual_text = leadership_page.get_person_details()
 
-    assert 'director of Grid Dynamics’ board of directors since 2006 and the Chief Executive Officer of Grid Dynamics since 2014' in actual_text
+    assert 'Chief Executive Officer of Grid Dynamics, a NASDAQ-listed company' in actual_text
 
 @allure.story("Case #2")
 def test_case_2(homepage):
@@ -44,9 +45,8 @@ def test_case_3(homepage):
     contact_page.fill_first_name('Anna')
     contact_page.fill_last_name('Smith')
     contact_page.fill_email('annasmith@griddynamics.com')
-    # this field doesn't exist any more - select  How did you hear about us? = Online Ads 
+    # this field doesn't exist any more - select  How did you hear about us? = Online Ads
     contact_page.accept_terms_conditions()
     contact_page.accept_subscribtion()
 
     assert contact_page.is_submit_button_disabled()
-

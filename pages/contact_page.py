@@ -20,10 +20,12 @@ class ContactPage:
         self.driver.find_element(*self.email_id).send_keys(email)
 
     def accept_terms_conditions(self):
-        self.driver.execute_script("arguments[0].click();", self.driver.find_element(*self.terms_conditions_checkbox_name))
+        self.driver.execute_script("arguments[0].click();",
+            self.driver.find_element(*self.terms_conditions_checkbox_name))
 
     def accept_subscribtion(self):
-        self.driver.execute_script("arguments[0].click();", self.driver.find_element(*self.subscribe_checkbox_name))
+        self.driver.execute_script("arguments[0].click();",
+            self.driver.find_element(*self.subscribe_checkbox_name))
 
     def is_submit_button_disabled(self):
         return self.driver.find_element(*self.submit_xpath).get_attribute("disabled") == 'true'

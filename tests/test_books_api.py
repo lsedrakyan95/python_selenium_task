@@ -1,18 +1,20 @@
 import pytest
 from assertpy import assert_that
-from api.book_api import BookAPI
 from tests.data.book_data import get_book_data
+from api.book_api import BookAPI
 
-def setup_module(module):
+def setup_module():
     print('\nStart running tests of Books API...\n')
 
-def teardown_module(module):
+def teardown_module():
     print('\nFinish running tests of Books API...\n')
 
-@pytest.fixture(scope="module")
-def api_client():
+@pytest.fixture(name="api_client", scope="module")
+def api_client_fixture():
     """Fixture to provide an instance of BookAPI for testing."""
-    return BookAPI()
+    api_client = BookAPI()
+    delete_all_books(api_client)
+    return api_client
 
 def test_get_latest_books_with_empty_list(api_client):
     response = api_client.get_latest_books(limit=1)
@@ -55,7 +57,7 @@ def test_get_latest_books_limit(api_client):
 
 def test_post_book_manipulation_schema(api_client):
     book_data = get_book_data()
-    response = api_client.post_book_manipulation(book_data)    
+    response = api_client.post_book_manipulation(book_data)
     item = response.json()
     assert_that(item).is_instance_of(dict)
     assert_that(item['type']).is_type_of(str)
@@ -129,3 +131,13 @@ def test_get_book_info_value(api_client):
     assert_that(item['creation_date']).is_equal_to(book_data['creation_date'])
     assert_that(item['id']).is_equal_to(response_book.json()['id'])
     assert_that(item['updated_date_time']).is_equal_to(response_book.json()['updated_date_time'])
+
+def delete_all_books(api_client):
+    while True:
+        response = api_client.get_latest_books(limit=100)
+        message = response.json()
+        if isinstance(message, list):
+            for book in message:
+                api_client.delete_book(book['id'])
+        else:
+            break
